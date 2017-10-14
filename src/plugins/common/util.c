@@ -1,24 +1,17 @@
 #include <time.h>
 #include <ctype.h>
+#include <strings.h>
 #include "util.h"
 
+static char ALPHABET[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static size_t ALPHABET_LEN = sizeof(ALPHABET);
+
 char rotateChar(char original, char rotation) {
-    char base;
-    int max;
     if(rotation == 0 || !isalnum(original)) {
         return original;
-    } else if(isdigit(original)) {
-        base = '0';
-        max = 10;
-    } else if(islower(original)) {
-        base = 'a';
-        max = 26;
-    } else {
-        base = 'A';
-        max = 26;
-    }
-
-    return base + (((original - base) + rotation) % max);
+    } 
+    size_t index = strcspn(ALPHABET, &original);
+    return ALPHABET[(index + rotation) % ALPHABET_LEN];
 }
 
 int sleepFor(unsigned long millis) {
