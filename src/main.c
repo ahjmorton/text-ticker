@@ -4,11 +4,11 @@
 #include <ctype.h>
 #include <time.h>
 
+#include "plugin_manager.h"
+
 #define BUFFER_SIZE 1024
 #define OK 0
 #define KO 1
-
-typedef void (*effect)(FILE *, char *, size_t);
 
 static char * readInFrom(FILE * input, size_t* outputSize, int* error) {
     char buffer[BUFFER_SIZE];
@@ -44,27 +44,16 @@ static char * readInFrom(FILE * input, size_t* outputSize, int* error) {
     return result;
 }
 
-static void identity(FILE * output, char * string, size_t size) {
-    fprintf(output, "%s", string);
-}
+static const char TICKER_CHARS[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char TICKER_CHARS_LENGTH = sizeof(TICKER_CHARS);
 
 static char rotateChar(char original, char rotation) {
-    char base;
-    int max;
     if(rotation == 0 || !isalnum(original)) {
         return original;
-    } else if(isdigit(original)) {
-        base = '0';
-        max = 10;
-    } else if(islower(original)) {
-        base = 'a';
-        max = 26;
-    } else {
-        base = 'A';
-        max = 26;
-    }
+    } 
 
-    return base + (((original - base) + rotation) % max);
+    const size_t location = strcspn(TICKER_CHARS, &original);
+    return TICKER_CHARS[(location + rotation) % TICKER_CHARS_LENGTH];
 }
 
 static int sleepFor(unsigned long millis) {
@@ -86,47 +75,10 @@ static int sleepFor(unsigned long millis) {
     return OK;
 }
 
-#define ROTATION_MAX 3
-#define NO_ROTATION -1
-#define SLEEP_DURATION 25L
-
-static void rotate(FILE * output, char * string, size_t size) {
-    int toRotate = 0;
-    char rotations[size];
-    int i;
-    for(i = 0; i < size; i++) {
-        if(isalnum(string[i])) {
-            toRotate += ROTATION_MAX;
-            rotations[i] = ROTATION_MAX;
-        } else {
-            rotations[i] = NO_ROTATION;
-        }
-    }
-    while(toRotate != 0) {
-        for(i = 0; i < size; i++) {
-            char original = string[i];
-            char rotation = rotations[i];
-            if(original == '\n' || rotation == NO_ROTATION) {
-               continue;
-            }
-            char current = rotateChar(original, rotation);
-            rotations[i] = rotation - 1;
-            toRotate--;
-            fputc(current, output);
-            fflush(output);
-            sleepFor(SLEEP_DURATION);
-        }
-        fprintf(output, "\033[%d;D", size);
-    }
-    for(i = 0; i < size; i++) {
-      char original = string[i];
-      fputc(original, output);
-      fflush(output);
-      sleepFor(SLEEP_DURATION);
-    }
-}
-
 int main(void) {
+    ttpm_init();
+    ttpm_load_plugins(".", stderr);
+
     size_t inputSize;
     int status;
     char * input = readInFrom(stdin, &inputSize, &status);
@@ -134,8 +86,16 @@ int main(void) {
        return 1;
     }
 
-    effect action = &rotate;
-    action(stdout, input, inputSize);
+    size_t effectCount;
+    effect * effectSelection = effects(&effectCount);
+    int i;
+    for(i = 0; i < effectCount; i++) {
+        (*effectSelection->func)(stdout, input, inputSize);
+    }
+
+    free(effectSelection);
+    ttpm_teardown();
     free(input);
+
     return 0;
 }
