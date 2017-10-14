@@ -4,6 +4,6 @@ static void identity(FILE * output, char * input, size_t inputSize) {
     fputs(input, output);  
 }
 
-void init(void (*registrar)(char *, void (*func)(FILE *, char *, size_t))) {
-     registrar("identity", &identity);
+int init(int (*registrar)(char *, void (*func)(FILE *, char *, size_t))) {
+     return registrar("identity", &identity);
 }

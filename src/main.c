@@ -90,7 +90,8 @@ int main(void) {
     effect * effectSelection = effects(&effectCount);
     int i;
     for(i = 0; i < effectCount; i++) {
-        (*effectSelection->func)(stdout, input, inputSize);
+        effect * currentEffect = effectSelection + i;
+        (*currentEffect->func)(stdout, input, inputSize);
     }
 
     free(effectSelection);
