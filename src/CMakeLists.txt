@@ -10,3 +10,4 @@ endforeach()
 
 file(GLOB ticker_src "*.h" "*.c")
 ADD_EXECUTABLE(text-ticker ${ticker_src})
+target_link_libraries(text-ticker ${CMAKE_DL_LIBS})
