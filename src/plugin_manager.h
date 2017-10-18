@@ -3,7 +3,9 @@
 
 #define TTPM_OK 0
 #define CANNOT_READ_PLUGIN_DIR 1
-#define ERROR_READING_PLUGIN 2
+#define ERROR_LOADING_PLUGIN 2
+#define ERROR_READING_PLUGIN 3
+#define CANNOT_FIND_INIT 4
 
 #include <stdio.h>
 

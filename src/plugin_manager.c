@@ -52,11 +52,15 @@ static int load_plugin(char * libraryFile, FILE * error) {
     void * handle = dlopen(libraryFile, RTLD_LAZY | RTLD_LOCAL);
     if(!handle) {
         fputs(dlerror(), error);
-        return ERROR_READING_PLUGIN; 
+        return ERROR_LOADING_PLUGIN; 
     }
 
     int (*registrar)(int (char *, void (*func)(FILE *, char *, size_t)));
     registrar = dlsym(handle, "init");
+    if(!registrar) {
+        return CANNOT_FIND_INIT;
+    }
+
     char * errorText = dlerror();
     if(errorText) {
         fputs(errorText, error);
