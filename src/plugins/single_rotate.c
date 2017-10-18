@@ -23,12 +23,17 @@ static void rotate(FILE * output, char * string, size_t size) {
         for(i = 0; i < size; i++) {
             char original = string[i];
             char rotation = rotations[i];
-            if(original == '\n' || rotation == NO_ROTATION) {
+            if(original == '\n') {
                continue;
             }
-            char current = rotateChar(original, rotation);
-            rotations[i] = rotation - 1;
-            toRotate--;
+            char current;
+            if(rotation == NO_ROTATION) {
+               current = original;
+            } else {
+               current = rotateChar(original, rotation);
+               rotations[i] = rotation - 1;
+               toRotate--;
+            }
             fputc(current, output);
             fflush(output);
             sleepFor(SLEEP_DURATION);
