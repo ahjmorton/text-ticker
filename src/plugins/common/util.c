@@ -1,6 +1,6 @@
 #include <time.h>
 #include <ctype.h>
-#include <strings.h>
+#include <string.h>
 #include "util.h"
 
 static char ALPHABET[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
